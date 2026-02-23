@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: var(--font-heading), sans-serif;
+  --font-drama: var(--font-drama), serif;
+  --font-data: var(--font-data), monospace;
+
+  --color-primary: #E8E4DD;
+  --color-accent: #E63B2E;
+  --color-background: #F5F3EE;
+  --color-dark: #111111;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
