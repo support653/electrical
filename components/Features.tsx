@@ -3,176 +3,139 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
-function DiagnosticShuffler() {
-  const [cards, setCards] = useState([
-    { id: 1, title: '25+ Years Experience', desc: 'Proven track record in global delivery.' },
-    { id: 2, title: 'Japanese Discipline', desc: 'Fully owned and trained by Japanese holding company.' },
-    { id: 3, title: 'Global Delivery', desc: 'Supplying Japan, Europe, North America, and Scandinavia.' },
-  ]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCards((prev) => {
-        const newCards = [...prev];
-        const last = newCards.pop();
-        if (last) newCards.unshift(last);
-        return newCards;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="relative w-full h-48 mt-6">
-      {cards.map((card, index) => {
-        const isTop = index === 0;
-        const isMiddle = index === 1;
-        const isBottom = index === 2;
-
-        return (
-          <div
-            key={card.id}
-            className="absolute w-full p-4 transition-all duration-700 bg-white border rounded-xl border-dark/10 shadow-sm"
-            style={{
-              top: isTop ? 0 : isMiddle ? 16 : 32,
-              scale: isTop ? 1 : isMiddle ? 0.95 : 0.9,
-              opacity: isTop ? 1 : isMiddle ? 0.7 : 0.4,
-              zIndex: 3 - index,
-              transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}
-          >
-            <div className="text-xs tracking-widest uppercase font-data text-accent mb-2">
-              0{card.id}
-            </div>
-            <h4 className="text-lg font-bold font-heading text-dark">{card.title}</h4>
-            <p className="text-sm font-heading text-dark/60 mt-1">{card.desc}</p>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-const messages = [
-  'INITIALIZING SMT LINE...',
-  'SYSTEMS INTEGRATION: OK',
-  'COATING & POTTING: ACTIVE',
-  'BGA REWORK: STANDBY',
-  'TEST & INSPECTION: RUNNING',
-  'PROTOTYPE ASSEMBLY: READY',
-];
-
-function TelemetryTypewriter() {
-  const [text, setText] = useState('');
-  const [msgIndex, setMsgIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (charIndex < messages[msgIndex].length) {
-      timeout = setTimeout(() => {
-        setText((prev) => prev + messages[msgIndex][charIndex]);
-        setCharIndex((prev) => prev + 1);
-      }, 50);
-    } else {
-      timeout = setTimeout(() => {
-        setText('');
-        setCharIndex(0);
-        setMsgIndex((prev) => (prev + 1) % messages.length);
-      }, 2000);
-    }
-    return () => clearTimeout(timeout);
-  }, [charIndex, msgIndex]);
-
-  return (
-    <div className="w-full h-48 mt-6 p-4 bg-dark rounded-xl flex flex-col relative overflow-hidden">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-        <span className="text-xs tracking-widest uppercase font-data text-accent">Live Feed</span>
-      </div>
-      <div className="font-data text-sm text-primary">
-        {'> '}
-        {text}
-        <span className="inline-block w-2 h-4 ml-1 align-middle bg-accent animate-pulse" />
-      </div>
-      <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-dark to-transparent pointer-events-none" />
-    </div>
-  );
-}
-
-function CursorProtocolScheduler() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cursorRef = useRef<SVGSVGElement>(null);
-  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const [activeDay, setActiveDay] = useState<number | null>(null);
-
+function GlobalNodeMap() {
+  const svgRef = useRef<SVGSVGElement>(null);
+  
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
-      
-      // Reset
-      tl.set(cursorRef.current, { x: 0, y: 100, opacity: 0 });
-      
-      // Enter
-      tl.to(cursorRef.current, { x: 50, y: 50, opacity: 1, duration: 0.5, ease: 'power2.out' });
-      
-      // Move to Wednesday (index 3)
-      tl.to(cursorRef.current, { x: 120, y: 30, duration: 0.8, ease: 'power2.inOut' });
-      
-      // Click
-      tl.to(cursorRef.current, { scale: 0.8, duration: 0.1, onComplete: () => setActiveDay(3) });
-      tl.to(cursorRef.current, { scale: 1, duration: 0.1 });
-      
-      // Move to Save
-      tl.to(cursorRef.current, { x: 180, y: 120, duration: 0.6, ease: 'power2.inOut', delay: 0.5 });
-      
-      // Click Save
-      tl.to(cursorRef.current, { scale: 0.8, duration: 0.1, onComplete: () => setActiveDay(null) });
-      tl.to(cursorRef.current, { scale: 1, duration: 0.1 });
-      
-      // Exit
-      tl.to(cursorRef.current, { x: 250, y: 150, opacity: 0, duration: 0.5, ease: 'power2.in' });
-
-    }, containerRef);
-
+      const tl = gsap.timeline({ repeat: -1 });
+      // Pulse lines
+      tl.to('.route-line', { strokeDashoffset: 0, duration: 2, stagger: 0.5, ease: 'power1.inOut' })
+        .to('.node-dot', { scale: 1.5, opacity: 1, duration: 0.2, stagger: 0.5 }, "-=2")
+        .to('.node-dot', { scale: 1, opacity: 0.5, duration: 0.5, stagger: 0.5 }, "-=1.8")
+        .to('.route-line', { opacity: 0, duration: 1 }, "+=1")
+        .set('.route-line', { strokeDashoffset: 100, opacity: 1 });
+    }, svgRef);
     return () => ctx.revert();
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full h-48 mt-6 p-4 bg-white border rounded-xl border-dark/10 shadow-sm flex flex-col justify-between">
-      <div>
-        <div className="flex justify-between w-full mb-4">
-          {days.map((day, i) => (
-            <div
-              key={i}
-              className={`w-8 h-8 flex items-center justify-center rounded-md font-data text-xs transition-colors duration-300 ${
-                activeDay === i ? 'bg-accent text-white' : 'bg-background text-dark/40'
-              }`}
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="space-y-2">
-          <div className="w-3/4 h-2 rounded-full bg-background" />
-          <div className="w-1/2 h-2 rounded-full bg-background" />
-        </div>
-      </div>
-      
-      <div className="self-end px-4 py-1.5 text-xs font-bold tracking-widest uppercase rounded-full font-data bg-dark text-white">
-        Save
-      </div>
+    <div className="w-full h-48 mt-6 p-4 bg-dark rounded-xl flex items-center justify-center relative overflow-hidden">
+      <svg ref={svgRef} viewBox="0 0 200 100" className="w-full h-full text-accent">
+        {/* Sri Lanka Node */}
+        <circle cx="100" cy="80" r="4" fill="currentColor" className="opacity-100" />
+        <text x="100" y="95" fill="white" fontSize="8" textAnchor="middle" className="font-data opacity-50">LK</text>
+        
+        {/* Other Nodes */}
+        <circle cx="160" cy="30" r="3" fill="currentColor" className="node-dot opacity-50" style={{ transformOrigin: '160px 30px' }} />
+        <text x="160" y="20" fill="white" fontSize="8" textAnchor="middle" className="font-data opacity-50">JP</text>
+        
+        <circle cx="80" cy="20" r="3" fill="currentColor" className="node-dot opacity-50" style={{ transformOrigin: '80px 20px' }} />
+        <text x="80" y="10" fill="white" fontSize="8" textAnchor="middle" className="font-data opacity-50">EU</text>
+        
+        <circle cx="30" cy="30" r="3" fill="currentColor" className="node-dot opacity-50" style={{ transformOrigin: '30px 30px' }} />
+        <text x="30" y="20" fill="white" fontSize="8" textAnchor="middle" className="font-data opacity-50">NA</text>
 
-      <svg
-        ref={cursorRef}
-        className="absolute z-10 w-6 h-6 text-dark drop-shadow-md"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        stroke="white"
-        strokeWidth="1.5"
-        style={{ pointerEvents: 'none' }}
-      >
-        <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+        {/* Lines */}
+        <path d="M100 80 Q130 50 160 30" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="100" strokeDashoffset="100" className="route-line" />
+        <path d="M100 80 Q90 50 80 20" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="100" strokeDashoffset="100" className="route-line" />
+        <path d="M100 80 Q60 60 30 30" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="100" strokeDashoffset="100" className="route-line" />
+      </svg>
+    </div>
+  );
+}
+
+function SMTConveyor() {
+  const pcbRef = useRef<SVGGElement>(null);
+  
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(pcbRef.current, 
+        { x: -60 }, 
+        { x: 200, duration: 3, repeat: -1, ease: 'none' }
+      );
+    }, pcbRef);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div className="w-full h-48 mt-6 p-4 bg-dark rounded-xl flex flex-col relative overflow-hidden">
+      <div className="flex-1 relative flex items-center">
+        <svg viewBox="0 0 200 60" className="w-full h-full">
+          {/* Conveyor */}
+          <line x1="0" y1="40" x2="200" y2="40" stroke="#333" strokeWidth="4" />
+          <line x1="0" y1="46" x2="200" y2="46" stroke="#222" strokeWidth="2" />
+          
+          {/* PCB */}
+          <g ref={pcbRef}>
+            <rect x="0" y="32" width="40" height="6" fill="#2E4036" stroke="#4a6b58" strokeWidth="1" />
+            <rect x="5" y="30" width="8" height="2" fill="#888" />
+            <rect x="18" y="30" width="12" height="2" fill="#111" />
+            <rect x="34" y="30" width="4" height="2" fill="#888" />
+          </g>
+          
+          {/* Machine Head */}
+          <rect x="90" y="0" width="20" height="20" fill="#444" />
+          <rect x="98" y="20" width="4" height="10" fill="#E63B2E" />
+        </svg>
+      </div>
+      <div className="font-data text-xs text-primary opacity-70 mt-2 flex items-center">
+        <span className="w-2 h-2 rounded-full bg-accent animate-pulse mr-2" />
+        SMT_LINE_01: PLACEMENT ACTIVE
+      </div>
+    </div>
+  );
+}
+
+function AOIScanner() {
+  const laserRef = useRef<SVGLineElement>(null);
+  const chipsRef = useRef<SVGRectElement[]>([]);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ repeat: -1 });
+      
+      // Reset chips
+      tl.set(chipsRef.current, { stroke: '#444' });
+      
+      // Move laser
+      tl.fromTo(laserRef.current, 
+        { y: 10 }, 
+        { y: 90, duration: 2, ease: 'linear' }
+      );
+      
+      // Highlight chips as laser passes
+      chipsRef.current.forEach((chip) => {
+        if (!chip) return;
+        const chipY = parseInt(chip.getAttribute('y') || '0');
+        const delay = (chipY - 10) / 80 * 2; // proportional to laser duration
+        tl.to(chip, { stroke: '#E63B2E', duration: 0.1 }, delay);
+      });
+      
+      tl.to(laserRef.current, { opacity: 0, duration: 0.2 });
+      tl.set(laserRef.current, { y: 10, opacity: 1 });
+      
+    }, laserRef);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div className="w-full h-48 mt-6 p-4 bg-white border rounded-xl border-dark/10 shadow-sm flex items-center justify-center relative">
+      <svg viewBox="0 0 100 100" className="w-full h-full max-w-[120px]">
+        {/* PCB Base */}
+        <rect x="10" y="10" width="80" height="80" fill="#F5F3EE" stroke="#111" strokeWidth="2" rx="4" />
+        
+        {/* Traces */}
+        <path d="M20 20 L40 20 L40 40 M60 80 L60 60 L80 60" fill="none" stroke="#ccc" strokeWidth="1" />
+        
+        {/* Chips */}
+        <rect ref={el => { if(el) chipsRef.current[0] = el }} x="20" y="25" width="15" height="15" fill="#111" stroke="#444" strokeWidth="2" />
+        <rect ref={el => { if(el) chipsRef.current[1] = el }} x="60" y="30" width="20" height="10" fill="#111" stroke="#444" strokeWidth="2" />
+        <rect ref={el => { if(el) chipsRef.current[2] = el }} x="30" y="60" width="15" height="20" fill="#111" stroke="#444" strokeWidth="2" />
+        <rect ref={el => { if(el) chipsRef.current[3] = el }} x="70" y="65" width="10" height="10" fill="#111" stroke="#444" strokeWidth="2" />
+        
+        {/* Laser */}
+        <line ref={laserRef} x1="5" y1="10" x2="95" y2="10" stroke="#E63B2E" strokeWidth="2" filter="drop-shadow(0 0 2px #E63B2E)" />
       </svg>
     </div>
   );
@@ -218,7 +181,7 @@ export function Features() {
             <p className="mt-2 text-sm text-dark/60 font-heading">
               Japanese-owned manufacturing discipline with 25+ years of excellence.
             </p>
-            <DiagnosticShuffler />
+            <GlobalNodeMap />
           </div>
 
           {/* Card 2 */}
@@ -227,7 +190,7 @@ export function Features() {
             <p className="mt-2 text-sm text-dark/60 font-heading">
               Comprehensive solutions from SMT to systems integration and testing.
             </p>
-            <TelemetryTypewriter />
+            <SMTConveyor />
           </div>
 
           {/* Card 3 */}
@@ -236,7 +199,7 @@ export function Features() {
             <p className="mt-2 text-sm text-dark/60 font-heading">
               ROHS processes, AOI-supported inspection, ISO-aligned systems.
             </p>
-            <CursorProtocolScheduler />
+            <AOIScanner />
           </div>
         </div>
       </div>

@@ -7,65 +7,85 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 function Motif1() {
-  const ref = useRef<SVGSVGElement>(null);
+  const reelRef = useRef<SVGGElement>(null);
+  const tapeRef = useRef<SVGPathElement>(null);
+  
   useEffect(() => {
-    gsap.to(ref.current, { rotation: 360, duration: 20, repeat: -1, ease: 'none' });
+    gsap.to(reelRef.current, { rotation: 360, transformOrigin: "50% 50%", duration: 10, repeat: -1, ease: 'none' });
+    gsap.to(tapeRef.current, { strokeDashoffset: -20, duration: 1, repeat: -1, ease: 'none' });
   }, []);
+  
   return (
-    <svg ref={ref} viewBox="0 0 100 100" className="w-full h-full text-accent opacity-20">
-      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
-      <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1" />
-      <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="2 6" />
-      <path d="M50 10 L50 90 M10 50 L90 50" stroke="currentColor" strokeWidth="1" />
+    <svg viewBox="0 0 100 100" className="w-full h-full text-accent opacity-20">
+      {/* Tape */}
+      <path ref={tapeRef} d="M50 80 L100 80" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="4 4" />
+      {/* Reel */}
+      <g ref={reelRef}>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2" />
+        <circle cx="50" cy="50" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+        <line x1="50" y1="10" x2="50" y2="40" stroke="currentColor" strokeWidth="2" />
+        <line x1="50" y1="60" x2="50" y2="90" stroke="currentColor" strokeWidth="2" />
+        <line x1="10" y1="50" x2="40" y2="50" stroke="currentColor" strokeWidth="2" />
+        <line x1="60" y1="50" x2="90" y2="50" stroke="currentColor" strokeWidth="2" />
+      </g>
     </svg>
   );
 }
 
 function Motif2() {
-  const lineRef = useRef<SVGLineElement>(null);
+  const nozzleRef = useRef<SVGGElement>(null);
+  const chipRef = useRef<SVGRectElement>(null);
+
   useEffect(() => {
-    gsap.fromTo(
-      lineRef.current,
-      { y: 10 },
-      { y: 90, duration: 2, repeat: -1, yoyo: true, ease: 'power1.inOut' }
-    );
+    const tl = gsap.timeline({ repeat: -1 });
+    tl.to(nozzleRef.current, { y: 20, duration: 0.5, ease: 'power2.in' })
+      .to(chipRef.current, { opacity: 1, duration: 0.1 })
+      .to(nozzleRef.current, { y: 0, duration: 0.5, ease: 'power2.out' })
+      .to(nozzleRef.current, { x: 40, duration: 0.5, ease: 'power2.inOut' })
+      .to(nozzleRef.current, { y: 30, duration: 0.5, ease: 'power2.in' })
+      .to(chipRef.current, { y: 30, x: 40, duration: 0 }) // chip placed
+      .to(nozzleRef.current, { y: 0, duration: 0.5, ease: 'power2.out' })
+      .to(chipRef.current, { opacity: 0, duration: 0.5 }) // fade out chip to reset
+      .to(nozzleRef.current, { x: 0, duration: 0.5, ease: 'power2.inOut' })
+      .set(chipRef.current, { x: 0, y: 0 });
   }, []);
+
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full text-accent opacity-20">
-      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-        <circle cx="5" cy="5" r="1" fill="currentColor" />
-      </pattern>
-      <rect width="100" height="100" fill="url(#grid)" />
-      <line ref={lineRef} x1="0" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="2" />
+      {/* PCB */}
+      <rect x="10" y="70" width="80" height="10" fill="none" stroke="currentColor" strokeWidth="2" />
+      {/* Chip */}
+      <rect ref={chipRef} x="25" y="40" width="10" height="4" fill="currentColor" opacity="0" />
+      {/* Nozzle */}
+      <g ref={nozzleRef}>
+        <rect x="20" y="10" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" />
+        <rect x="28" y="30" width="4" height="10" fill="currentColor" />
+      </g>
     </svg>
   );
 }
 
 function Motif3() {
-  const pathRef = useRef<SVGPathElement>(null);
+  const scanRef = useRef<SVGLineElement>(null);
+  
   useEffect(() => {
-    const path = pathRef.current;
-    if (!path) return;
-    const length = path.getTotalLength();
-    gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-    gsap.to(path, {
-      strokeDashoffset: 0,
-      duration: 2,
-      repeat: -1,
-      ease: 'power1.inOut',
-    });
+    gsap.fromTo(scanRef.current, 
+      { attr: { x1: 10, x2: 10 } }, 
+      { attr: { x1: 90, x2: 90 }, duration: 2, repeat: -1, yoyo: true, ease: 'power1.inOut' }
+    );
   }, []);
+
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full text-accent opacity-20">
-      <path
-        ref={pathRef}
-        d="M0 50 L20 50 L30 20 L40 80 L50 50 L60 50 L70 30 L80 70 L90 50 L100 50"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {/* PCB Grid */}
+      <rect x="10" y="10" width="80" height="80" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="20" y="20" width="15" height="15" fill="currentColor" />
+      <rect x="60" y="25" width="20" height="10" fill="currentColor" />
+      <rect x="30" y="60" width="15" height="20" fill="currentColor" />
+      <rect x="70" y="65" width="10" height="10" fill="currentColor" />
+      {/* Scanner */}
+      <line ref={scanRef} x1="10" y1="5" x2="10" y2="95" stroke="currentColor" strokeWidth="4" />
+      <polygon points="50,0 60,10 40,10" fill="currentColor" opacity="0.5" />
     </svg>
   );
 }
